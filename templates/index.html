@@ -4,17 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIX Vercel - Search Plataform</title>
+    <title>SIX</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #000000;
-            --text-color: #ffffff;
-            --border-color: #ffffff;
-            --hover-color: rgba(255, 255, 255, 0.1);
-            --focus-color: rgba(255, 255, 255, 0.2);
+            --bg-color: #141414;
+            --text-color: #e5e5e5;
+            --primary-color: #e50914;
+            --border-color: #333333;
+            --hover-color: rgba(229, 9, 20, 0.1);
+            --focus-color: rgba(229, 9, 20, 0.3);
         }
 
         * {
@@ -39,27 +40,17 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            background-color: var(--bg-color);
-            padding: 1rem 2rem;
-        }
-
-        .header-content {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+            padding: 1.5rem 4%;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-        }
-
-        .header-icon {
-            width: 24px;
-            height: 24px;
-            color: #ffffff;
-            flex-shrink: 0;
+            justify-content: space-between;
         }
 
         .header-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-color);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
             text-decoration: none;
         }
 
@@ -68,106 +59,257 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            min-height: 100vh;
+            padding: 8rem 4% 2rem;
+            background: radial-gradient(ellipse at center, rgba(20,20,20,0.9) 0%, rgba(0,0,0,1) 100%);
         }
 
         .search-container {
             display: flex;
             flex-direction: column;
-            align-items: center;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
+            margin: 0 auto;
             gap: 2rem;
         }
 
         .search-box {
             width: 100%;
-            padding: 1rem 1.5rem;
-            background-color: transparent;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
+            padding: 1.25rem 2rem;
+            background-color: rgba(20,20,20,0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
             color: var(--text-color);
-            font-size: 1.125rem;
+            font-size: 1.5rem;
             font-family: inherit;
             outline: none;
             transition: all 0.3s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         .search-box::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(229,229,229,0.5);
+            font-weight: 300;
         }
 
         .search-box:hover {
-            border-color: var(--text-color);
-            box-shadow: 0 0 0 4px var(--hover-color);
+            background-color: rgba(30,30,30,0.9);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .search-box:focus {
-            border-color: var(--text-color);
-            box-shadow: 0 0 0 4px var(--focus-color);
-            transform: translateY(-2px);
+            background-color: rgba(30,30,30,0.9);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        /* Rankings Section */
+        .rankings-section {
+            margin: 3rem 0;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .top10-badge {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            margin-left: 1rem;
+            font-size: 1rem;
+        }
+
+        .rankings-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .rankings-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .ranking-item {
+            position: relative;
+            flex: 0 0 auto;
+            width: 300px;
+            height: 170px;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .ranking-item:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .ranking-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 12rem;
+            font-weight: 800;
+            color: rgba(255,255,255,0.9);
+            line-height: 0.8;
+            z-index: 1;
+            text-shadow: 
+                0 0 10px rgba(0,0,0,0.8),
+                0 0 20px rgba(0,0,0,0.6),
+                0 0 30px rgba(0,0,0,0.4);
+            padding-left: 0.5rem;
+            -webkit-text-stroke: 2px rgba(0,0,0,0.3);
+            filter: 
+                drop-shadow(0 0 8px rgba(0,0,0,0.9))
+                blur(0.5px);
+            opacity: 0.95;
+        }
+
+        .ranking-number::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, 
+                rgba(0,0,0,0.6) 0%, 
+                rgba(0,0,0,0.4) 30%, 
+                rgba(0,0,0,0.2) 50%, 
+                rgba(0,0,0,0) 70%);
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        .ranking-poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            mask-image: linear-gradient(to right, 
+                rgba(0,0,0,1) 0%, 
+                rgba(0,0,0,0.8) 20%, 
+                rgba(0,0,0,0.5) 30%, 
+                transparent 60%);
+            -webkit-mask-image: linear-gradient(to right, 
+                rgba(0,0,0,1) 0%, 
+                rgba(0,0,0,0.8) 20%, 
+                rgba(0,0,0,0.5) 30%, 
+                transparent 60%);
+        }
+
+        .ranking-details {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+            color: white;
+            z-index: 3;
+        }
+
+        .ranking-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Movies Grid */
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .movie-card {
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+        }
+
+        .movie-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-card:hover .movie-title {
+            opacity: 1;
         }
 
         /* Selection styles */
-        .search-box::selection {
-            background-color: rgba(255, 255, 255, 0.3);
-            color: #ffffff;
-        }
-
-        .search-box::-moz-selection {
-            background-color: rgba(255, 255, 255, 0.3);
-            color: #ffffff;
-        }
-
-        /* Better text selection for all elements */
         ::selection {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: var(--primary-color);
             color: #ffffff;
         }
 
         ::-moz-selection {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: var(--primary-color);
             color: #ffffff;
-        }
-
-        /* Footer */
-        .footer-message {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.4);
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        .footer-message a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-message a:hover {
-            color: var(--text-color);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .header {
-                padding: 1rem;
-            }
-
             .main-content {
-                padding: 1rem;
+                padding: 6rem 2rem 2rem;
             }
-
+            
+            .ranking-item {
+                width: 220px;
+                height: 125px;
+            }
+            
+            .ranking-number {
+                font-size: 8rem;
+                -webkit-text-stroke: 1px rgba(0,0,0,0.3);
+            }
+            
+            .ranking-number::before {
+                width: 120%;
+                height: 120%;
+            }
+            
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
             .search-box {
-                font-size: 1rem;
-                padding: 0.875rem 1.25rem;
-            }
-
-            .footer-message {
-                font-size: 0.6875rem;
+                font-size: 1.25rem;
+                padding: 1rem 1.5rem;
             }
         }
     </style>
@@ -176,10 +318,7 @@
 
     <header class="header">
         <div class="header-content">
-            <svg class="header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
-            </svg>
-            <a href="/" class="header-text">Back <</a>
+            <h1 class="header-text">SIX Films</h1>
         </div>
     </header>
 
@@ -191,13 +330,98 @@
                 placeholder="Search for movies, series, or anime..."
                 id="searchInput"
                 autocomplete="off"
+                autofocus
             >
+        </div>
+        
+        <!-- Rankings Section -->
+        <div class="rankings-section">
+            <h2 class="section-title">
+                Today
+                <span class="top10-badge">TOP 10</span>
+            </h2>
+            <div class="rankings-container" id="top10Container"></div>
+        </div>
+        
+        <!-- Popular Movies Section -->
+        <div class="rankings-section">
+            <h2 class="section-title">New Movies</h2>
+            <div class="movies-grid" id="moviesGrid"></div>
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
+            const top10Container = document.getElementById('top10Container');
+            const moviesGrid = document.getElementById('moviesGrid');
+            
+            // Fetch top 10 movies from TMDB API
+            fetch('https://api.themoviedb.org/3/movie/top_rated?api_key=4e44d9029b1270a757cddc766a1bcb63&language=en-US&page=1')
+                .then(response => response.json())
+                .then(data => {
+                    const top10Movies = data.results.slice(0, 10); // Get top 10 movies
+                    
+                    top10Movies.forEach((movie, index) => {
+                        const rankingItem = document.createElement('div');
+                        rankingItem.className = 'ranking-item';
+                        
+                        rankingItem.innerHTML = `
+                            <div class="ranking-number">${index + 1}</div>
+                            <img 
+                                src="https://image.tmdb.org/t/p/w500${movie.poster_path}" 
+                                alt="${movie.title}" 
+                                class="ranking-poster"
+                                onerror="this.src='https://via.placeholder.com/500x750?text=Poster+Not+Available'"
+                            >
+                            <div class="ranking-details">
+                                <div class="ranking-title">${movie.title}</div>
+                            </div>
+                        `;
+                        
+                        rankingItem.addEventListener('click', () => {
+                            window.location.href = `./pages/busca.html?q=${encodeURIComponent(movie.title)}`;
+                        });
+                        
+                        top10Container.appendChild(rankingItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching top 10 movies:', error);
+                    top10Container.innerHTML = '<p>Unable to load top 10 movies. Please try again later.</p>';
+                });
+
+            // Fetch popular movies from TMDB API
+            fetch('https://api.themoviedb.org/3/movie/popular?api_key=4e44d9029b1270a757cddc766a1bcb63&language=en-US&page=1')
+                .then(response => response.json())
+                .then(data => {
+                    const movies = data.results.slice(0, 12); // Get first 12 popular movies
+                    
+                    movies.forEach(movie => {
+                        const movieCard = document.createElement('div');
+                        movieCard.className = 'movie-card';
+                        
+                        movieCard.innerHTML = `
+                            <img 
+                                src="https://image.tmdb.org/t/p/w500${movie.poster_path}" 
+                                alt="${movie.title}" 
+                                class="movie-poster"
+                                onerror="this.src='https://via.placeholder.com/500x750?text=Poster+Not+Available'"
+                            >
+                            <div class="movie-title">${movie.title}</div>
+                        `;
+                        
+                        movieCard.addEventListener('click', () => {
+                            window.location.href = `./pages/busca.html?q=${encodeURIComponent(movie.title)}`;
+                        });
+                        
+                        moviesGrid.appendChild(movieCard);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching popular movies:', error);
+                    moviesGrid.innerHTML = '<p>Unable to load movies. Please try again later.</p>';
+                });
 
             searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
