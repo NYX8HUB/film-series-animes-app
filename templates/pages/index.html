@@ -15,6 +15,8 @@
             --border-color: #ffffff;
             --hover-color: rgba(255, 255, 255, 0.1);
             --focus-color: rgba(255, 255, 255, 0.2);
+            --accent-color: #ff0000; /* Mudado de roxo para vermelho */
+            --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -30,6 +32,12 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
         }
 
         /* Header */
@@ -39,8 +47,17 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            background-color: var(--bg-color);
+            background-color: rgba(0, 0, 0, 0.8);
             padding: 1rem 2rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(0);
+            transition: var(--transition-base);
+        }
+
+        .header.hidden {
+            transform: translateY(-100%);
         }
 
         .header-content {
@@ -54,6 +71,7 @@
             height: 24px;
             color: #ffffff;
             flex-shrink: 0;
+            transition: transform 0.3s ease;
         }
 
         .header-text {
@@ -61,6 +79,27 @@
             font-weight: 600;
             color: var(--text-color);
             text-decoration: none;
+            position: relative;
+            transition: var(--transition-base);
+        }
+
+        .header-text::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .header-text:hover::after {
+            width: 100%;
+        }
+
+        .header-text:hover {
+            color: var(--accent-color);
         }
 
         /* Main Content */
@@ -72,6 +111,41 @@
             align-items: center;
             padding: 2rem;
             min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background elements */
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.1) 0%, rgba(255, 0, 0, 0) 70%); /* Vermelho */
+            z-index: -1;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .circle-2 {
+            width: 200px;
+            height: 200px;
+            bottom: -50px;
+            right: -50px;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            50% {
+                transform: translateY(-20px) translateX(20px);
+            }
         }
 
         .search-container {
@@ -81,74 +155,92 @@
             width: 100%;
             max-width: 600px;
             gap: 2rem;
+            position: relative;
         }
 
         .search-box {
             width: 100%;
             padding: 1rem 1.5rem;
-            background-color: transparent;
+            background-color: rgba(255, 255, 255, 0.05);
             border: 2px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 50px;
             color: var(--text-color);
             font-size: 1.125rem;
             font-family: inherit;
             outline: none;
-            transition: all 0.3s ease;
+            transition: var(--transition-base);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .search-box::placeholder {
             color: rgba(255, 255, 255, 0.6);
+            transition: var(--transition-base);
         }
 
         .search-box:hover {
-            border-color: var(--text-color);
-            box-shadow: 0 0 0 4px var(--hover-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.2); /* Vermelho */
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-box:hover::placeholder {
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .search-box:focus {
-            border-color: var(--text-color);
-            box-shadow: 0 0 0 4px var(--focus-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.3); /* Vermelho */
             transform: translateY(-2px);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Loading animation */
+        .search-loading {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .search-box:focus ~ .search-loading {
+            width: 100%;
+            animation: loadingPulse 1.5s infinite;
+        }
+
+        @keyframes loadingPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
         }
 
         /* Selection styles */
         .search-box::selection {
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: var(--accent-color);
             color: #ffffff;
         }
 
         .search-box::-moz-selection {
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: var(--accent-color);
             color: #ffffff;
         }
 
         /* Better text selection for all elements */
         ::selection {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: var(--accent-color);
             color: #ffffff;
         }
 
         ::-moz-selection {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: var(--accent-color);
             color: #ffffff;
-        }
-
-        /* Footer */
-        .footer-message {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.4);
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        .footer-message a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-message a:hover {
-            color: var(--text-color);
         }
 
         /* Responsive */
@@ -165,14 +257,49 @@
                 font-size: 1rem;
                 padding: 0.875rem 1.25rem;
             }
+        }
 
-            .footer-message {
-                font-size: 0.6875rem;
-            }
+        /* Particles effect */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 0, 0, 0.2); /* Vermelho */
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Cursor effect */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(255, 0, 0, 0.5); /* Vermelho */
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: screen;
+            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+        }
+
+        .custom-cursor.active {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 0, 0, 0.2); /* Vermelho */
         }
     </style>
 </head>
 <body>
+    <div class="custom-cursor"></div>
 
     <header class="header">
         <div class="header-content">
@@ -184,6 +311,11 @@
     </header>
 
     <main class="main-content">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        
+        <div class="particles" id="particles"></div>
+        
         <div class="search-container">
             <input 
                 type="text" 
@@ -191,19 +323,29 @@
                 placeholder="Search for movies, series, or anime..."
                 id="searchInput"
                 autocomplete="off"
+                spellcheck="false"
             >
+            <div class="search-loading"></div>
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
+            const header = document.querySelector('.header');
+            const cursor = document.querySelector('.custom-cursor');
+            let lastScrollPosition = window.scrollY;
 
+            // Search functionality
             searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     const query = e.target.value.trim();
                     if (query.length >= 2) {
-                        window.location.href = `./busca.html?q=${encodeURIComponent(query)}`;
+                        // Add loading effect before navigation
+                        e.target.classList.add('searching');
+                        setTimeout(() => {
+                            window.location.href = `./busca.html?q=${encodeURIComponent(query)}`;
+                        }, 500);
                     }
                 }
             });
@@ -217,6 +359,90 @@
                 searchInput.style.opacity = '1';
                 searchInput.style.transform = 'translateY(0)';
             }, 100);
+
+            // Header hide/show on scroll
+            window.addEventListener('scroll', function() {
+                const currentScrollPosition = window.scrollY;
+                
+                if (currentScrollPosition > lastScrollPosition && currentScrollPosition > 100) {
+                    // Scrolling down
+                    header.classList.add('hidden');
+                } else {
+                    // Scrolling up
+                    header.classList.remove('hidden');
+                }
+                
+                lastScrollPosition = currentScrollPosition;
+            });
+
+            // Custom cursor effect
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+
+            // Cursor hover effects
+            const interactiveElements = document.querySelectorAll('a, button, input, .header-text');
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.classList.add('active');
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('active');
+                });
+            });
+
+            // Particles effect
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 3 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 10 + 10;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite alternate`;
+                
+                particlesContainer.appendChild(particle);
+            }
+
+            // Add ripple effect to search box on focus
+            searchInput.addEventListener('focus', () => {
+                const ripple = document.createElement('div');
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50px';
+                ripple.style.backgroundColor = 'rgba(255, 0, 0, 0.2)'; /* Vermelho */
+                ripple.style.transform = 'scale(0)';
+                ripple.style.width = '100%';
+                ripple.style.height = '100%';
+                ripple.style.top = '0';
+                ripple.style.left = '0';
+                ripple.style.pointerEvents = 'none';
+                ripple.style.zIndex = '-1';
+                ripple.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+                
+                searchInput.parentElement.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.style.transform = 'scale(1.1)';
+                    ripple.style.opacity = '0';
+                }, 10);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
         });
     </script>
 </body>
