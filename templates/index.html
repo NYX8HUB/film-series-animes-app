@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,43 +62,86 @@
             background: radial-gradient(ellipse at center, rgba(20,20,20,0.9) 0%, rgba(0,0,0,1) 100%);
         }
 
+        /* Search Container */
         .search-container {
-            display: flex;
-            flex-direction: column;
+            position: relative;
             width: 100%;
             max-width: 800px;
-            margin: 0 auto;
-            gap: 2rem;
+            margin: 0 auto 3rem;
         }
 
         .search-box {
             width: 100%;
-            padding: 1.25rem 2rem;
+            padding: 1.5rem 2rem 1.5rem 4rem;
             background-color: rgba(20,20,20,0.7);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
             color: var(--text-color);
             font-size: 1.5rem;
             font-family: inherit;
             outline: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 
+                0 2px 10px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .search-box::placeholder {
             color: rgba(229,229,229,0.5);
             font-weight: 300;
+            transition: all 0.3s ease;
         }
 
         .search-box:hover {
             background-color: rgba(30,30,30,0.9);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 
+                0 4px 20px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            transform: translateY(-2px);
         }
 
         .search-box:focus {
-            background-color: rgba(30,30,30,0.9);
+            background-color: rgba(20,20,20,0.95);
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px var(--primary-color);
+            box-shadow: 
+                0 0 0 2px var(--primary-color),
+                0 5px 25px rgba(229, 9, 20, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .search-box:focus::placeholder {
+            opacity: 0.5;
+            transform: translateX(10px);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus ~ .search-icon {
+            color: var(--primary-color);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .search-box:not(:placeholder-shown) ~ .search-icon {
+            opacity: 0;
+            transform: translateY(-50%) translateX(-10px);
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
 
         /* Rankings Section */
@@ -131,11 +173,11 @@
             overflow-x: auto;
             gap: 0.5rem;
             padding: 0.5rem 0;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
 
         .rankings-container::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+            display: none;
         }
 
         .ranking-item {
@@ -332,6 +374,9 @@
                 autocomplete="off"
                 autofocus
             >
+            <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="currentColor"/>
+            </svg>
         </div>
         
         <!-- Rankings Section -->
@@ -345,7 +390,7 @@
         
         <!-- Popular Movies Section -->
         <div class="rankings-section">
-            <h2 class="section-title">New Movies</h2>
+            <h2 class="section-title">Movies</h2>
             <div class="movies-grid" id="moviesGrid"></div>
         </div>
     </main>
@@ -356,11 +401,24 @@
             const top10Container = document.getElementById('top10Container');
             const moviesGrid = document.getElementById('moviesGrid');
             
+            // Efeito de foco automático com animação
+            setTimeout(() => {
+                searchInput.focus();
+                
+                // Piscar suave do cursor
+                let blinkCount = 0;
+                const blinkInterval = setInterval(() => {
+                    searchInput.style.caretColor = blinkCount % 2 ? 'transparent' : 'var(--primary-color)';
+                    blinkCount++;
+                    if(blinkCount > 6) clearInterval(blinkInterval);
+                }, 300);
+            }, 600);
+
             // Fetch top 10 movies from TMDB API
             fetch('https://api.themoviedb.org/3/movie/top_rated?api_key=4e44d9029b1270a757cddc766a1bcb63&language=en-US&page=1')
                 .then(response => response.json())
                 .then(data => {
-                    const top10Movies = data.results.slice(0, 10); // Get top 10 movies
+                    const top10Movies = data.results.slice(0, 10);
                     
                     top10Movies.forEach((movie, index) => {
                         const rankingItem = document.createElement('div');
@@ -395,7 +453,7 @@
             fetch('https://api.themoviedb.org/3/movie/popular?api_key=4e44d9029b1270a757cddc766a1bcb63&language=en-US&page=1')
                 .then(response => response.json())
                 .then(data => {
-                    const movies = data.results.slice(0, 12); // Get first 12 popular movies
+                    const movies = data.results.slice(0, 12);
                     
                     movies.forEach(movie => {
                         const movieCard = document.createElement('div');
