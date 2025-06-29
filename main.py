@@ -5,6 +5,10 @@ app = Flask(__name__, static_url_path='/assets', static_folder='static')
 @app.route('/pages/index.html')
 def index():
     return render_template('index.html')
+    
+@app.route('/')
+def index2():
+    return render_template('index.html')
 
 @app.route('/pages/busca.html')
 def pag1():
