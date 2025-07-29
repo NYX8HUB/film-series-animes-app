@@ -73,6 +73,25 @@ body {
     overflow-x: hidden;
 }
 
+.episode-list {
+    max-height: 70vh; /* ou outro valor adequado */
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) var(--background-secondary);
+}
+
+/* Estilizar a scrollbar para navegadores WebKit */
+.episode-list::-webkit-scrollbar {
+    width: 8px;
+}
+.episode-list::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+}
+.episode-list::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+    border-radius: 4px;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
