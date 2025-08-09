@@ -3,37 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIX</title>
+    <title>SIX - Busca de Filmes, Séries e Animes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/main.css">
-    <meta name="description" content="Resultados da busca no @v33s3l.dev">
+    <meta name="description" content="Busque por filmes, séries e animes com SIX - O melhor buscador de conteúdo audiovisual">
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #e50914;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .result-card {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .result-card .info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            opacity: 0;
+        }
+
+        .result-card:hover .info-overlay {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #e50914 0%, #b1060f 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .glass-effect {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.5);
+        }
+    </style>
 </head>
-<body>
-    <header class="header">
-        <div class="header-content">
-            <svg class="header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
-            </svg>
-            <a href="../" class="header-text">Back <</a>
+<body class="bg-black text-gray-100 font-['Inter'] min-h-screen">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black backdrop-blur-md border-b border-gray-800">
+        <div class="container mx-auto px-4 py-3 flex items-center">
+            <a href="../" class="flex items-center gap-2 group">
+                <svg class="w-6 h-6 text-white group-hover:text-gray-300 transition-colors" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+                </svg>
+                <span class="text-xl font-semibold group-hover:text-red-500 transition-colors">Voltar</span>
+            </a>
         </div>
     </header>
 
-    <main class="search-page-main">
-        <div class="container">
-            <section class="search-header">
-                <h1 class="search-title">Buscar Conteúdo</h1>
-                <div class="main-search-container">
+    <!-- Main Content -->
+    <main class="pt-20 pb-12 px-4">
+        <div class="container mx-auto max-w-6xl">
+            <!-- Search Header -->
+            <section class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 gradient-text">Buscar Conteúdo</h1>
+                <div class="max-w-2xl mx-auto flex flex-col sm:flex-row gap-3">
                     <input 
                         type="text" 
-                        class="main-search-input" 
+                        id="mainSearchInput"
+                        class="flex-1 px-5 py-3 rounded-xl bg-gray-800 border border-gray-700 focus:border-red-500 outline-none search-input transition-colors placeholder-gray-500"
                         placeholder="Digite o nome do filme, série ou anime..."
                         aria-label="Campo de busca principal"
                         autocomplete="off"
-                        id="mainSearchInput"
                     >
-                    <button class="search-button" id="searchButton">
+                    <button id="searchButton" class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19S2 15.194 2 10.5 5.806 2 10.5 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -42,32 +108,35 @@
                 </div>
             </section>
 
-            <section class="search-filters">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-type="all">Todos</button>
-                    <button class="filter-btn" data-type="movie">Filmes</button>
-                    <button class="filter-btn" data-type="tv">Séries</button>
-                    <button class="filter-btn" data-type="anime">Animes</button>
+            <!-- Filters -->
+            <section class="mb-8">
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-700 hover:border-red-500 transition-colors font-medium active" data-type="all">Todos</button>
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-700 hover:border-red-500 transition-colors font-medium" data-type="movie">Filmes</button>
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-700 hover:border-red-500 transition-colors font-medium" data-type="tv">Séries</button>
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-700 hover:border-red-500 transition-colors font-medium" data-type="anime">Animes</button>
                 </div>
             </section>
 
-            <section class="search-results-section" id="searchResultsSection">
-                <div class="search-status" id="searchStatus">
+            <!-- Results -->
+            <section id="searchResultsSection">
+                <div id="searchStatus" class="text-center py-8 text-gray-400">
                     <p>Digite algo para começar a buscar...</p>
                 </div>
-                <div class="results-grid" id="resultsGrid"></div>
+                <div id="resultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
             </section>
 
-            <section class="pagination-section" id="paginationSection" style="display: none;">
-                <div class="pagination">
-                    <button class="pagination-btn" id="prevPage" disabled>
+            <!-- Pagination -->
+            <section id="paginationSection" class="mt-12 hidden">
+                <div class="flex items-center justify-center gap-4">
+                    <button id="prevPage" disabled class="px-4 py-2 rounded-lg border border-gray-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         Anterior
                     </button>
-                    <span class="page-info" id="pageInfo">Página 1 de 1</span>
-                    <button class="pagination-btn" id="nextPage" disabled>
+                    <span id="pageInfo" class="text-gray-400">Página 1 de 1</span>
+                    <button id="nextPage" disabled class="px-4 py-2 rounded-lg border border-gray-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors">
                         Próxima
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -78,315 +147,13 @@
         </div>
     </main>
 
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="loading-spinner">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="glass-effect rounded-xl p-8 flex flex-col items-center gap-4">
             <div class="spinner"></div>
-            <p>Buscando...</p>
+            <p class="text-lg">Buscando...</p>
         </div>
     </div>
-
-    <style>
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: #000000;
-            padding: 1rem 2rem;
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .header-icon {
-            width: 24px;
-            height: 24px;
-            color: #ffffff;
-            flex-shrink: 0;
-        }
-
-        .header-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #ffffff;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .header-text:hover {
-            opacity: 0.8;
-        }
-
-        ::selection {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-        }
-
-        ::-moz-selection {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-        }
-
-        .search-page-main {
-            margin-top: 80px;
-            min-height: calc(100vh - 80px);
-            padding: var(--space-8) 0;
-        }
-
-        .search-header {
-            text-align: center;
-            margin-bottom: var(--space-12);
-        }
-
-        .search-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: var(--space-6);
-        }
-
-        .main-search-container {
-            display: flex;
-            max-width: 600px;
-            margin: 0 auto;
-            gap: var(--space-3);
-        }
-
-        .main-search-input {
-            flex: 1;
-            background: var(--bg-glass);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            padding: var(--space-4) var(--space-5);
-            color: var(--text-primary);
-            font-family: var(--font-family);
-            font-size: 1rem;
-            outline: none;
-            transition: var(--transition-fast);
-        }
-
-        .main-search-input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .main-search-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .search-button {
-            background: var(--primary-gradient);
-            border: none;
-            border-radius: var(--radius-lg);
-            padding: var(--space-4) var(--space-6);
-            color: white;
-            font-family: var(--font-family);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            white-space: nowrap;
-        }
-
-        .search-button:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .search-filters {
-            margin-bottom: var(--space-8);
-        }
-
-        .filter-group {
-            display: flex;
-            justify-content: center;
-            gap: var(--space-3);
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            background: var(--bg-glass);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            padding: var(--space-3) var(--space-5);
-            color: var(--text-secondary);
-            font-family: var(--font-family);
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition-fast);
-        }
-
-        .filter-btn:hover,
-        .filter-btn.active {
-            background: transparent;
-            color: var(--text-primary);
-            border-color: var(--primary-color);
-        }
-
-        .search-results-section {
-            margin-bottom: var(--space-16);
-        }
-
-        .search-status {
-            text-align: center;
-            padding: var(--space-8);
-            color: var(--text-muted);
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: var(--space-6);
-            margin-top: var(--space-6);
-        }
-
-        .result-card {
-            background: var(--bg-glass);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-xl);
-            overflow: hidden;
-            cursor: pointer;
-            transition: var(--transition-normal);
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .result-card:hover {
-            transform: scale(1.05);
-            border-color: var(--primary-color);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .result-card img {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
-        }
-
-        .result-card-info {
-            padding: var(--space-4);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .result-card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: var(--space-2);
-            color: var(--text-primary);
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .result-card-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .result-card-rating {
-            color: #fbbf24;
-            font-weight: 500;
-        }
-
-        .result-card-type {
-            background: var(--primary-color);
-            color: #e50914;
-            padding: 2px 8px;
-            border-radius: var(--radius-sm);
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .pagination-section {
-            margin-top: var(--space-8);
-        }
-
-        .pagination {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-4);
-        }
-
-        .pagination-btn {
-            background: var(--bg-glass);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            padding: var(--space-3) var(--space-4);
-            color: var(--text-secondary);
-            font-family: var(--font-family);
-            cursor: pointer;
-            transition: var(--transition-fast);
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
-
-        .pagination-btn:hover:not(:disabled) {
-            background: var(--bg-glass-hover);
-            color: var(--text-primary);
-        }
-
-        .pagination-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .page-info {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-            .search-title {
-                font-size: 2rem;
-            }
-
-            .main-search-container {
-                flex-direction: column;
-                max-width: none;
-            }
-
-            .results-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: var(--space-4);
-            }
-
-            .result-card {
-                height: 320px;
-            }
-
-            .result-card img {
-                height: 220px;
-            }
-
-            .pagination {
-                flex-direction: column;
-                gap: var(--space-3);
-            }
-        }
-    </style>
 
     <script>
         const API_CONFIG = {
@@ -404,8 +171,8 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initializeSearch();
-            initializeHeaderSearch();
-
+            
+            // Check for search query in URL
             const urlParams = new URLSearchParams(window.location.search);
             const queryParam = urlParams.get('q');
             if (queryParam) {
@@ -421,6 +188,7 @@
             const prevPage = document.getElementById('prevPage');
             const nextPage = document.getElementById('nextPage');
 
+            // Input event for search field
             mainSearchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim();
                 if (query.length === 0) {
@@ -428,6 +196,7 @@
                 }
             });
 
+            // Enter key press in search field
             mainSearchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -438,6 +207,7 @@
                 }
             });
 
+            // Search button click
             searchButton.addEventListener('click', () => {
                 const query = mainSearchInput.value.trim();
                 if (query.length >= 2) {
@@ -445,6 +215,7 @@
                 }
             });
 
+            // Filter buttons
             filterBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     filterBtns.forEach(b => b.classList.remove('active'));
@@ -457,6 +228,7 @@
                 });
             });
 
+            // Pagination buttons
             prevPage.addEventListener('click', () => {
                 if (currentPage > 1) {
                     currentPage--;
@@ -470,101 +242,6 @@
                     performSearch(currentQuery);
                 }
             });
-        }
-
-        function initializeHeaderSearch() {
-            const searchToggle = document.querySelector('.search-toggle');
-            const searchMenu = document.querySelector('.search-menu');
-            const searchInput = document.getElementById('headerSearchInput');
-            const searchResults = document.getElementById('headerSearchResults');
-
-            if (!searchToggle || !searchMenu || !searchInput || !searchResults) return;
-
-            searchToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                searchMenu.classList.toggle('active');
-                if (searchMenu.classList.contains('active')) {
-                    searchInput.focus();
-                }
-            });
-
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const query = e.target.value.trim();
-                    if (query.length >= 2) {
-                        window.location.href = `./busca.html?q=${encodeURIComponent(query)}`;
-                    }
-                }
-            });
-
-            let searchTimeout;
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const query = e.target.value.trim();
-
-                if (query.length < 2) {
-                    searchResults.innerHTML = '';
-                    return;
-                }
-
-                searchTimeout = setTimeout(() => performHeaderSearch(query), 300);
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!searchMenu.contains(e.target) && e.target !== searchToggle) {
-                    searchMenu.classList.remove('active');
-                }
-            });
-        }
-
-        async function performHeaderSearch(query) {
-            const searchResults = document.getElementById('headerSearchResults');
-            if (!searchResults) return;
-
-            try {
-                searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted);">Buscando...</div>';
-
-                const [moviesResponse, tvResponse] = await Promise.all([
-                    fetch(`${API_CONFIG.baseUrl}/search/movie?api_key=${API_CONFIG.key}&language=pt-BR&query=${encodeURIComponent(query)}`),
-                    fetch(`${API_CONFIG.baseUrl}/search/tv?api_key=${API_CONFIG.key}&language=pt-BR&query=${encodeURIComponent(query)}`)
-                ]);
-
-                const [moviesData, tvData] = await Promise.all([
-                    moviesResponse.json(),
-                    tvResponse.json()
-                ]);
-
-                const allResults = [
-                    ...moviesData.results.map(item => ({ ...item, type: 'movie' })),
-                    ...tvData.results.map(item => ({ ...item, type: 'tv' }))
-                ].filter(item => item.poster_path).slice(0, 5);
-
-                if (allResults.length === 0) {
-                    searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted);">Nenhum resultado encontrado</div>';
-                    return;
-                }
-
-                searchResults.innerHTML = allResults.map(item => {
-                    const title = item.title || item.name;
-                    const year = extractYear(item.release_date || item.first_air_date);
-                    const rating = (item.vote_average || 0).toFixed(1);
-
-                    return `
-                        <div class="search-result-item" onclick="openMediaPage(${item.id}, '${item.type}')" style="cursor: pointer; background: transparent !important;">
-                            <img src="${API_CONFIG.posterUrl}${item.poster_path}" alt="${title}" loading="lazy">
-                            <div>
-                                <div style="font-weight: 600; color: var(--text-primary);">${title}</div>
-                                <small style="color: var(--text-muted);">${year} • ⭐ ${rating}</small>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Erro na busca do header:', error);
-                searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: #ef4444;">Erro ao buscar</div>';
-            }
         }
 
         async function performSearch(query) {
@@ -633,29 +310,39 @@
             const searchStatus = document.getElementById('searchStatus');
 
             if (results.length === 0) {
-                searchStatus.innerHTML = '<p>Nenhum resultado encontrado para sua busca.</p>';
+                searchStatus.innerHTML = '<p class="text-gray-400">Nenhum resultado encontrado para sua busca.</p>';
                 resultsGrid.innerHTML = '';
                 return;
             }
 
-            searchStatus.innerHTML = `<p>Encontrados ${results.length} resultado(s) para "${currentQuery}"</p>`;
+            searchStatus.innerHTML = `<p class="text-gray-300">Encontrados ${results.length} resultado(s) para <span class="text-purple-400">"${currentQuery}"</span></p>`;
 
             resultsGrid.innerHTML = results.map(item => {
                 const title = item.title || item.name;
                 const year = extractYear(item.release_date || item.first_air_date);
                 const rating = (item.vote_average || 0).toFixed(1);
                 const typeLabel = getTypeLabel(item.type);
+                const typeColor = '#e50914'; // Netflix red for all types
 
                 return `
-                    <div class="result-card" onclick="openMediaPage(${item.id}, '${item.type}')" style="background: var(--bg-glass) !important;">
-                        <img src="${API_CONFIG.imageUrl}${item.poster_path}" alt="${title}" loading="lazy">
-                        <div class="result-card-info">
-                            <h3 class="result-card-title">${title}</h3>
-                            <div class="result-card-meta">
-                                <span class="result-card-rating">⭐ ${rating}</span>
-                                <span class="result-card-year">${year}</span>
-                                <span class="result-card-type">${typeLabel}</span>
+                    <div class="result-card glass-effect rounded-xl overflow-hidden cursor-pointer relative" onclick="openMediaPage(${item.id}, '${item.type}')">
+                        <img src="${API_CONFIG.imageUrl}${item.poster_path}" alt="${title}" class="w-full aspect-[2/3] object-cover" loading="lazy">
+                        <div class="p-3">
+                            <h3 class="font-semibold text-sm md:text-base line-clamp-2 mb-2">${title}</h3>
+                            <div class="flex justify-between items-center text-xs text-gray-400">
+                                <span class="px-2 py-1 rounded text-xs font-medium" style="background-color: ${typeColor}20; color: ${typeColor}">
+                                    ${typeLabel}
+                                </span>
                             </div>
+                        </div>
+                        <div class="info-overlay">
+                            <div class="flex items-center gap-1 text-yellow-400 mb-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                <span class="font-bold">${rating}</span>
+                            </div>
+                            <div class="text-white text-sm">Ano: ${year}</div>
                         </div>
                     </div>
                 `;
@@ -669,11 +356,11 @@
             const pageInfo = document.getElementById('pageInfo');
 
             if (totalPages <= 1) {
-                paginationSection.style.display = 'none';
+                paginationSection.classList.add('hidden');
                 return;
             }
 
-            paginationSection.style.display = 'block';
+            paginationSection.classList.remove('hidden');
             prevPage.disabled = currentPage <= 1;
             nextPage.disabled = currentPage >= totalPages;
             pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
@@ -684,9 +371,9 @@
             const searchStatus = document.getElementById('searchStatus');
             const paginationSection = document.getElementById('paginationSection');
 
-            searchStatus.innerHTML = '<p>Digite algo para começar a buscar...</p>';
+            searchStatus.innerHTML = '<p class="text-gray-400">Digite algo para começar a buscar...</p>';
             resultsGrid.innerHTML = '';
-            paginationSection.style.display = 'none';
+            paginationSection.classList.add('hidden');
             currentQuery = '';
         }
 
@@ -698,14 +385,12 @@
 
         function setLoading(loading) {
             const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) {
-                loadingOverlay.style.display = loading ? 'flex' : 'none';
-            }
+            loadingOverlay.classList.toggle('hidden', !loading);
         }
 
         function showError(message) {
             const searchStatus = document.getElementById('searchStatus');
-            searchStatus.innerHTML = `<p style="color: #ef4444;">${message}</p>`;
+            searchStatus.innerHTML = `<p class="text-red-400">${message}</p>`;
         }
 
         function extractYear(dateString) {
@@ -726,6 +411,15 @@
             return labels[type] || 'Mídia';
         }
 
+        function getTypeColor(type) {
+            const colors = {
+                'movie': '#3b82f6',    // blue-500
+                'tv': '#10b981',       // emerald-500
+                'anime': '#ec4899'     // pink-500
+            };
+            return colors[type] || '#8b5cf6'; // purple-500 as default
+        }
+
         function openMediaPage(id, type) {
             let pageType;
             switch (type) {
@@ -743,8 +437,6 @@
 
             window.location.href = `${pageType}?id=${id}`;
         }
-
-        
     </script>
 </body>
 </html>
