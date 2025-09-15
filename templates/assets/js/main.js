@@ -1,155 +1,543 @@
 
-/**
- * Vessel - Minimalist Search Platform
- */
 
 const API_CONFIG = {
     key: 'cf72f14362cff1da8bed9fa86831de66',
     baseUrl: 'https://api.themoviedb.org/3',
-    imageUrl: 'https://image.tmdb.org/t/p/w500',
+    imageUrl: 'https://image.tmdb.org/t/p/original',
     posterUrl: 'https://image.tmdb.org/t/p/w200',
-    backdropUrl: 'https://image.tmdb.org/t/p/original'
+    profileUrl: 'https://image.tmdb.org/t/p/w200',
+    streamUrl: 'https://embed.warezcdn.link/filme/'
 };
 
-class VesselApp {
+class MoviePageManager {
     constructor() {
-        this.searchTimeout = null;
-        this.init();
+        this.movieId = null;
+        this.movieData = null;
+        this.isLoading = false;
+        this.initializeEventListeners();
     }
 
-    init() {
-        this.setupEventListeners();
-        this.setupSearchFunctionality();
+    initializeEventListeners() {
+        const playButton = document.querySelector('.play-button');
+        if (playButton) {
+            playButton.addEventListener('click', () => this.openStreamModal());
+        }
+
+        const downloadButton = document.querySelector('.download-button');
+        if (downloadButton) {
+            downloadButton.addEventListener('click', () => this.openDownloadModal());
+        }
+
+        this.initializeStreamModal();
+        this.initializeDownloadModal();
+
+        window.scrollToDetails = () => this.scrollToDetails();
+        window.proceedToWatch = () => this.proceedToWatch();
+        window.cancelStream = () => this.cancelStream();
+        window.closeDownloadModal = () => this.closeDownloadModal();
     }
 
-    setupEventListeners() {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    this.handleSearch(e.target.value.trim());
-                }
-            });
+    
 
-            this.addLoadAnimation(searchInput);
+    initializeStreamModal() {
+        const streamModal = document.getElementById('streamModal');
+        const closeStream = document.getElementById('closeStream');
+        const modalBackdrop = document.querySelector('.modal-backdrop');
+
+        if (closeStream) {
+            closeStream.addEventListener('click', () => this.cancelStream());
+        }
+
+        if (modalBackdrop) {
+            modalBackdrop.addEventListener('click', () => this.cancelStream());
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
-                e.preventDefault();
-                this.focusSearch();
+            if (e.key === 'Escape' && streamModal?.classList.contains('active')) {
+                this.cancelStream();
             }
         });
     }
 
-    setupSearchFunctionality() {
+    initializeDownloadModal() {
+        const downloadModal = document.getElementById('downloadModal');
+        const closeDownload = document.getElementById('closeDownload');
         
+        if (closeDownload) {
+            closeDownload.addEventListener('click', () => this.closeDownloadModal());
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && downloadModal?.classList.contains('active')) {
+                this.closeDownloadModal();
+            }
+        });
     }
 
-    handleSearch(query) {
-        if (query.length >= 2) {
-            const basePath = window.location.pathname.includes('/pages/') ? './' : './pages/';
-            window.location.href = `${basePath}busca.html?q=${encodeURIComponent(query)}`;
+    scrollToDetails() {
+        const detailsSection = document.getElementById('movieDetailsSection');
+        if (detailsSection) {
+            detailsSection.scrollIntoView({ behavior: 'smooth' });
         }
     }
 
-    focusSearch() {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.focus();
+    setLoading(loading) {
+        this.isLoading = loading;
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = loading ? 'flex' : 'none';
         }
     }
 
-    addLoadAnimation(element) {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
-
-        setTimeout(() => {
-            element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
-        }, 100);
+    formatCurrency(amount) {
+        if (!amount || amount === 0) return 'Não informado';
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
     }
 
-    getMediaType(item) {
-        if (item.title) return 'movie';
-        if (item.name) return 'tv';
-        return 'movie';
+    formatDuration(minutes) {
+        if (!minutes) return 'Não informado';
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
     }
 
-    extractYear(dateString) {
-        if (!dateString) return 'N/A';
-        try {
-            return new Date(dateString).getFullYear() || 'N/A';
-        } catch {
-            return 'N/A';
-        }
+    getLanguageName(code) {
+        const languages = {
+            'en': 'Inglês',
+            'pt': 'Português',
+            'es': 'Espanhol',
+            'fr': 'Francês',
+            'de': 'Alemão',
+            'it': 'Italiano',
+            'ja': 'Japonês',
+            'ko': 'Coreano',
+            'zh': 'Chinês',
+            'ru': 'Russo'
+        };
+        return languages[code] || code.toUpperCase();
     }
 
-    truncateText(text, maxLength = 150) {
-        if (!text || text.length <= maxLength) return text;
-        return text.substring(0, maxLength).trim() + '...';
-    }
-
-    openMediaPage(id, type) {
-        if (!id) {
-            console.error('Invalid ID for navigation');
+    async loadMovieDetails() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.movieId = urlParams.get('id');
+        
+        if (!this.movieId || isNaN(this.movieId)) {
+            this.showError("ID do filme inválido ou não encontrado na URL");
             return;
         }
 
-        let pageType;
-        switch (type) {
-            case 'movie':
-                pageType = './pages/filme.html';
-                break;
-            case 'anime':
-                pageType = './pages/anime.html';
-                break;
-            case 'tv':
-            default:
-                pageType = './pages/serie.html';
-                break;
+        try {
+            this.setLoading(true);
+
+            const [movieResponse, creditsResponse, videosResponse] = await Promise.all([
+                fetch(`${API_CONFIG.baseUrl}/movie/${this.movieId}?api_key=${API_CONFIG.key}&language=pt-BR`),
+                fetch(`${API_CONFIG.baseUrl}/movie/${this.movieId}/credits?api_key=${API_CONFIG.key}&language=pt-BR`),
+                fetch(`${API_CONFIG.baseUrl}/movie/${this.movieId}/videos?api_key=${API_CONFIG.key}&language=pt-BR`)
+            ]);
+
+            if (!movieResponse.ok) {
+                throw new Error(`Erro ${movieResponse.status}: ${movieResponse.statusText}`);
+            }
+
+            const [movieData, creditsData, videosData] = await Promise.all([
+                movieResponse.json(),
+                creditsResponse.json(),
+                videosResponse.json()
+            ]);
+
+            this.movieData = movieData;
+            this.renderMovieData(movieData, creditsData, videosData);
+
+        } catch (error) {
+            console.error('Erro ao carregar filme:', error);
+            this.showError("Erro ao carregar detalhes do filme. Tente novamente.");
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    renderMovieData(movieData, creditsData, videosData) {
+        try {
+            this.updateBanner(movieData);
+            
+            this.updateDetails(movieData);
+            
+            this.updateCast(creditsData);
+            
+            this.updateTrailer(videosData);
+
+            document.title = `${movieData.title} - v3ss3lvault`;
+
+        } catch (error) {
+            console.error('Erro ao renderizar dados:', error);
+            this.showError("Erro ao exibir informações do filme");
+        }
+    }
+
+    updateBanner(movieData) {
+        const banner = document.getElementById("movieBanner");
+        const title = document.getElementById("movieTitle");
+        const year = document.getElementById("movieYear");
+        const rating = document.getElementById("movieRating");
+        const genre = document.getElementById("movieGenre");
+        const synopsis = document.getElementById("movieSynopsis");
+
+        if (banner && movieData.backdrop_path) {
+            banner.style.backgroundImage = `url(${API_CONFIG.imageUrl}${movieData.backdrop_path})`;
+        }
+
+        if (title) {
+            title.textContent = movieData.title || 'Título não disponível';
+        }
+
+        if (year && movieData.release_date) {
+            year.textContent = new Date(movieData.release_date).getFullYear();
+        }
+
+        if (rating) {
+            rating.textContent = `⭐ ${(movieData.vote_average || 0).toFixed(1)}/10`;
+        }
+
+        if (genre && movieData.genres) {
+            const genreNames = movieData.genres.map(g => g.name).slice(0, 3).join(', ');
+            genre.textContent = genreNames || 'Gêneros não informados';
+        }
+
+        if (synopsis) {
+            synopsis.textContent = movieData.overview || 'Sinopse não disponível.';
+        }
+    }
+
+    updateDetails(movieData) {
+        const detailedSynopsis = document.getElementById("movieDetailedSynopsis");
+        const duration = document.getElementById("movieDuration");
+        const budget = document.getElementById("movieBudget");
+        const revenue = document.getElementById("movieRevenue");
+        const language = document.getElementById("movieLanguage");
+
+        if (detailedSynopsis) {
+            detailedSynopsis.textContent = movieData.overview || 'Descrição detalhada não disponível.';
+        }
+
+        if (duration) {
+            duration.textContent = this.formatDuration(movieData.runtime);
+        }
+
+        if (budget) {
+            budget.textContent = this.formatCurrency(movieData.budget);
+        }
+
+        if (revenue) {
+            revenue.textContent = this.formatCurrency(movieData.revenue);
+        }
+
+        if (language) {
+            language.textContent = this.getLanguageName(movieData.original_language);
+        }
+    }
+
+    updateCast(creditsData) {
+        const castGrid = document.getElementById("castGrid");
+        if (!castGrid || !creditsData.cast) return;
+
+        castGrid.innerHTML = '';
+
+        const mainCast = creditsData.cast.slice(0, 6);
+        
+        mainCast.forEach(actor => {
+            const actorElement = document.createElement("div");
+            actorElement.className = "cast-member";
+            
+            const profileImage = actor.profile_path 
+                ? `${API_CONFIG.profileUrl}${actor.profile_path}`
+                : this.getPlaceholderImage();
+
+            actorElement.innerHTML = `
+                <img src="${profileImage}" alt="Foto de ${actor.name}" loading="lazy">
+                <p>${actor.name}</p>
+                <small>${actor.character || 'Personagem não informado'}</small>
+            `;
+            
+            castGrid.appendChild(actorElement);
+        });
+    }
+
+    updateTrailer(videosData) {
+        const videoPlayer = document.getElementById("videoPlayer");
+        if (!videoPlayer || !videosData.results) return;
+
+        const trailer = videosData.results.find(video => 
+            video.type === "Trailer" && video.site === "YouTube"
+        ) || videosData.results.find(video => 
+            video.site === "YouTube"
+        );
+
+        if (trailer) {
+            videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}?rel=0&modestbranding=1`;
+        } else {
+            const videoSection = document.querySelector('.video-section');
+            if (videoSection) {
+                videoSection.style.display = 'none';
+            }
+        }
+    }
+
+    getPlaceholderImage() {
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMkQyRDVGIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjIwIiBmaWxsPSIjOEI1Q0Y2Ii8+CjxwYXRoIGQ9Ik0zMCAxMjBDMzAgMTA0IDUxIDkyIDc1IDkyUzEyMCAxMDQgMTIwIDEyMFYxMzBIMzBWMTIwWiIgZmlsbD0iIzhCNUNGNiIvPgo8L3N2Zz4=';
+    }
+
+    openStreamModal() {
+        const streamModal = document.getElementById('streamModal');
+        const streamWarning = document.getElementById('streamWarning');
+        const streamFrame = document.getElementById('streamFrame');
+
+        if (streamModal) {
+            streamModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        if (streamWarning) {
+            streamWarning.style.display = 'flex';
+        }
+
+        if (streamFrame) {
+            streamFrame.style.display = 'none';
+            streamFrame.src = '';
+        }
+    }
+
+    proceedToWatch() {
+        const streamWarning = document.getElementById('streamWarning');
+        const streamFrame = document.getElementById('streamFrame');
+        const compatibilityMode = document.getElementById('compatibilityMode');
+
+        if (streamWarning) {
+            streamWarning.style.display = 'none';
+        }
+
+        if (streamFrame && this.movieId) {
+            streamFrame.style.display = 'block';
+            streamFrame.src = `${API_CONFIG.streamUrl}${this.movieId}`;
+            
+            // Update sandbox based on compatibility mode
+            if (compatibilityMode && compatibilityMode.checked) {
+                // Compatibility mode: Allow more permissions but still block popups
+                streamFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-top-navigation-by-user-activation');
+            } else {
+                // Restricted mode: Block popups and unwanted redirects
+                streamFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+            }
+            
+            streamFrame.setAttribute('referrerpolicy', 'no-referrer');
+            streamFrame.setAttribute('loading', 'lazy');
+            streamFrame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
+            
+            const loadTimeout = setTimeout(() => {
+                this.showStreamError('Tempo limite excedido. Tente novamente.');
+            }, 15000);
+
+            streamFrame.onload = () => {
+                clearTimeout(loadTimeout);
+            };
+
+            streamFrame.onerror = () => {
+                clearTimeout(loadTimeout);
+                this.showStreamError('Erro ao carregar o player. Verifique sua conexão.');
+            };
+        }
+    }
+
+    cancelStream() {
+        const streamModal = document.getElementById('streamModal');
+        const streamFrame = document.getElementById('streamFrame');
+
+        if (streamModal) {
+            streamModal.classList.remove('active');
+        }
+
+        if (streamFrame) {
+            streamFrame.src = '';
+        }
+
+        document.body.style.overflow = 'auto';
+    }
+
+    openDownloadModal() {
+        const downloadModal = document.getElementById('downloadModal');
+        const downloadInfo = document.getElementById('downloadInfo');
+        
+        if (downloadModal) {
+            downloadModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Fetch download metadata
+        this.fetchDownloadMetadata();
+    }
+
+    closeDownloadModal() {
+        const downloadModal = document.getElementById('downloadModal');
+        
+        if (downloadModal) {
+            downloadModal.classList.remove('active');
+        }
+        
+        document.body.style.overflow = 'auto';
+    }
+
+    async fetchDownloadMetadata() {
+        const downloadInfo = document.getElementById('downloadInfo');
+        const downloadOptions = document.getElementById('downloadOptions');
+        
+        if (!this.movieId) {
+            downloadInfo.innerHTML = '<p>Erro: ID do filme não encontrado.</p>';
+            return;
         }
 
         try {
-            document.body.style.opacity = '0.8';
-            setTimeout(() => {
-                window.location.href = `${pageType}?id=${encodeURIComponent(id)}`;
-            }, 150);
+            const response = await fetch(`/api/download-metadata?id=${this.movieId}`);
+            const data = await response.json();
+            
+            if (data.available) {
+                this.showDownloadOptions(data);
+            } else {
+                downloadInfo.innerHTML = `
+                    <p>Download não disponível para este filme.</p>
+                    <p><small>Apenas filmes em domínio público ou com licença estão disponíveis para download.</small></p>
+                `;
+            }
         } catch (error) {
-            console.error('Navigation error:', error);
-            window.location.href = `${pageType}?id=${encodeURIComponent(id)}`;
+            console.error('Erro ao buscar metadados de download:', error);
+            downloadInfo.innerHTML = '<p>Erro ao verificar disponibilidade de download.</p>';
+        }
+    }
+
+    showDownloadOptions(data) {
+        const downloadInfo = document.getElementById('downloadInfo');
+        const downloadOptions = document.getElementById('downloadOptions');
+        const qualityList = document.getElementById('qualityList');
+        
+        downloadInfo.innerHTML = `
+            <p><strong>${data.title}</strong></p>
+            <p><small>${data.legal_notice}</small></p>
+        `;
+        
+        qualityList.innerHTML = '';
+        
+        data.qualities.forEach(quality => {
+            const qualityButton = document.createElement('button');
+            qualityButton.className = 'quality-option';
+            qualityButton.innerHTML = `
+                <div class="quality-info">
+                    <div class="quality-name">${quality.name}</div>
+                    <div class="quality-size">${quality.size}</div>
+                </div>
+            `;
+            qualityButton.onclick = () => this.startDownload(quality.id);
+            qualityList.appendChild(qualityButton);
+        });
+        
+        downloadOptions.style.display = 'block';
+    }
+
+    startDownload(qualityId) {
+        const agreement = document.getElementById('downloadAgreement');
+        
+        if (!agreement.checked) {
+            alert('Você precisa aceitar os termos antes de fazer o download.');
+            return;
+        }
+        
+        const downloadUrl = `/download/${this.movieId}?q=${qualityId}`;
+        window.open(downloadUrl, '_blank');
+        this.closeDownloadModal();
+    }
+
+    showStreamError(message) {
+        const streamFrame = document.getElementById('streamFrame');
+        if (!streamFrame) return;
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'stream-error';
+        errorDiv.innerHTML = `
+            <div style="
+                position: absolute; 
+                top: 50%; 
+                left: 50%; 
+                transform: translate(-50%, -50%);
+                background: var(--bg-secondary); 
+                padding: 2rem; 
+                border-radius: 1rem; 
+                text-align: center;
+                border: 2px solid var(--accent-color); 
+                color: white;
+                max-width: 400px;
+            ">
+                <h3 style="color: var(--accent-color); margin-bottom: 1rem;">⚠️ Erro no Player</h3>
+                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">${message}</p>
+                <button onclick="location.reload()" style="
+                    background: var(--primary-gradient); 
+                    color: white; 
+                    border: none;
+                    padding: 0.75rem 1.5rem; 
+                    border-radius: 0.5rem; 
+                    cursor: pointer;
+                    font-weight: 600;
+                ">
+                    Recarregar Página
+                </button>
+            </div>
+        `;
+
+        streamFrame.style.display = 'none';
+        streamFrame.parentNode.appendChild(errorDiv);
+    }
+
+    showError(message) {
+        const banner = document.getElementById("movieBanner");
+        if (banner) {
+            banner.innerHTML = `
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <div class="movie-header">
+                        <h1 class="movie-title" style="color: var(--accent-color);">⚠️ Erro</h1>
+                        <p class="movie-synopsis">${message}</p>
+                        <div class="action-buttons">
+                            <button class="play-button" onclick="location.reload()">
+                                <span>Tentar Novamente</span>
+                            </button>
+                            <a href="index.html" class="info-button">
+                                <span>Voltar ao Início</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
     }
 }
 
-let app;
+let movieManager;
 
-function initializeApp() {
-    try {
-        app = new VesselApp();
-    } catch (error) {
-        
-        document.body.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #000; color: #fff; text-align: center; font-family: Inter, sans-serif;">
-                <div>
-                    <h1>Error loading</h1>
-                    <p>Please reload the page.</p>
-                    <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #fff; color: #000; border: none; border-radius: 0.5rem; cursor: pointer;">
-                        Reload
-                    </button>
-                </div>
-            </div>
-        `;
-    }
+function initializeMoviePage() {
+    movieManager = new MoviePageManager();
+    movieManager.loadMovieDetails();
+    
+    
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
+    document.addEventListener('DOMContentLoaded', initializeMoviePage);
 } else {
-    initializeApp();
+    initializeMoviePage();
 }
 
 if (typeof window !== 'undefined') {
-    window.Vessel = { app };
+    window.V3ss3lMovie = {
+        movieManager
+    };
 }
+
