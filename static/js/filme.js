@@ -23,11 +23,18 @@ class MoviePageManager {
             playButton.addEventListener('click', () => this.openStreamModal());
         }
 
+        const downloadButton = document.querySelector('.download-button');
+        if (downloadButton) {
+            downloadButton.addEventListener('click', () => this.openDownloadModal());
+        }
+
         this.initializeStreamModal();
+        this.initializeDownloadModal();
 
         window.scrollToDetails = () => this.scrollToDetails();
         window.proceedToWatch = () => this.proceedToWatch();
         window.cancelStream = () => this.cancelStream();
+        window.closeDownloadModal = () => this.closeDownloadModal();
     }
 
     
@@ -48,6 +55,21 @@ class MoviePageManager {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && streamModal?.classList.contains('active')) {
                 this.cancelStream();
+            }
+        });
+    }
+
+    initializeDownloadModal() {
+        const downloadModal = document.getElementById('downloadModal');
+        const closeDownload = document.getElementById('closeDownload');
+        
+        if (closeDownload) {
+            closeDownload.addEventListener('click', () => this.closeDownloadModal());
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && downloadModal?.classList.contains('active')) {
+                this.closeDownloadModal();
             }
         });
     }
@@ -290,6 +312,7 @@ class MoviePageManager {
     proceedToWatch() {
         const streamWarning = document.getElementById('streamWarning');
         const streamFrame = document.getElementById('streamFrame');
+        const compatibilityMode = document.getElementById('compatibilityMode');
 
         if (streamWarning) {
             streamWarning.style.display = 'none';
@@ -299,8 +322,18 @@ class MoviePageManager {
             streamFrame.style.display = 'block';
             streamFrame.src = `${API_CONFIG.streamUrl}${this.movieId}`;
             
+            // Update sandbox based on compatibility mode
+            if (compatibilityMode && compatibilityMode.checked) {
+                // Compatibility mode: Allow more permissions but still block popups
+                streamFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-top-navigation-by-user-activation');
+            } else {
+                // Restricted mode: Block popups and unwanted redirects
+                streamFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+            }
+            
             streamFrame.setAttribute('referrerpolicy', 'no-referrer');
             streamFrame.setAttribute('loading', 'lazy');
+            streamFrame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
             
             const loadTimeout = setTimeout(() => {
                 this.showStreamError('Tempo limite excedido. Tente novamente.');
@@ -330,6 +363,97 @@ class MoviePageManager {
         }
 
         document.body.style.overflow = 'auto';
+    }
+
+    openDownloadModal() {
+        const downloadModal = document.getElementById('downloadModal');
+        const downloadInfo = document.getElementById('downloadInfo');
+        
+        if (downloadModal) {
+            downloadModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Fetch download metadata
+        this.fetchDownloadMetadata();
+    }
+
+    closeDownloadModal() {
+        const downloadModal = document.getElementById('downloadModal');
+        
+        if (downloadModal) {
+            downloadModal.classList.remove('active');
+        }
+        
+        document.body.style.overflow = 'auto';
+    }
+
+    async fetchDownloadMetadata() {
+        const downloadInfo = document.getElementById('downloadInfo');
+        const downloadOptions = document.getElementById('downloadOptions');
+        
+        if (!this.movieId) {
+            downloadInfo.innerHTML = '<p>Erro: ID do filme não encontrado.</p>';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/download-metadata?id=${this.movieId}`);
+            const data = await response.json();
+            
+            if (data.available) {
+                this.showDownloadOptions(data);
+            } else {
+                downloadInfo.innerHTML = `
+                    <p>Download não disponível para este filme.</p>
+                    <p><small>Apenas filmes em domínio público ou com licença estão disponíveis para download.</small></p>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao buscar metadados de download:', error);
+            downloadInfo.innerHTML = '<p>Erro ao verificar disponibilidade de download.</p>';
+        }
+    }
+
+    showDownloadOptions(data) {
+        const downloadInfo = document.getElementById('downloadInfo');
+        const downloadOptions = document.getElementById('downloadOptions');
+        const qualityList = document.getElementById('qualityList');
+        
+        downloadInfo.innerHTML = `
+            <p><strong>${data.title}</strong></p>
+            <p><small>${data.legal_notice}</small></p>
+        `;
+        
+        qualityList.innerHTML = '';
+        
+        data.qualities.forEach(quality => {
+            const qualityButton = document.createElement('button');
+            qualityButton.className = 'quality-option';
+            qualityButton.innerHTML = `
+                <div class="quality-info">
+                    <div class="quality-name">${quality.name}</div>
+                    <div class="quality-size">${quality.size}</div>
+                </div>
+            `;
+            qualityButton.onclick = () => this.startDownload(quality.id);
+            qualityList.appendChild(qualityButton);
+        });
+        
+        downloadOptions.style.display = 'block';
+    }
+
+    startDownload(qualityId) {
+        const agreement = document.getElementById('downloadAgreement');
+        
+        if (!agreement.checked) {
+            alert('Você precisa aceitar os termos antes de fazer o download.');
+            return;
+        }
+        
+        const downloadUrl = `/download/${this.movieId}?q=${qualityId}`;
+        window.open(downloadUrl, '_blank');
+        this.closeDownloadModal();
     }
 
     showStreamError(message) {
@@ -416,3 +540,4 @@ if (typeof window !== 'undefined') {
         movieManager
     };
 }
+
