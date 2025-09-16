@@ -70,12 +70,6 @@
                         </svg>
                         <span>Assistir</span>
                     </button>
-                    <button class="download-button" aria-label="Baixar filme">
-                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                            <path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                        </svg>
-                        <span>Baixar</span>
-                    </button>
                     <button class="info-button" onclick="scrollToDetails()" aria-label="Mais informações">
                         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                             <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
@@ -163,19 +157,12 @@
                     <div class="warning-text">
                         <p>Para a melhor experiência, recomendamos:</p>
                         <ul>
-                            <li><strong>Bloqueio automático de anúncios</strong> já está ativo</li>
-                            <li><strong>Se o vídeo não carregar:</strong> Use o "Modo Compatível" abaixo</li>
+                            <li><strong>Use um bloqueador de anúncios</strong> para evitar redirecionamentos</li>
+                            <li><strong>Se for redirecionado:</strong> Volte usando Alt + ← (PC) ou botão Voltar (Mobile)</li>
                             <li><strong>Não clique em pop-ups</strong> ou anúncios suspeitos</li>
                             <li><strong>Mantenha seu antivírus ativo</strong></li>
                         </ul>
                         <p class="warning-note">Esta é uma fonte externa. Use por sua conta e risco.</p>
-                    </div>
-
-                    <div class="compatibility-mode" style="margin-top: 15px;">
-                        <label class="compatibility-toggle">
-                            <input type="checkbox" id="compatibilityMode" />
-                            <span class="toggle-text">Ativar Modo Compatível (permite mais pop-ups, mas pode melhorar reprodução)</span>
-                        </label>
                     </div>
 
                     <div class="warning-buttons">
@@ -196,50 +183,7 @@
                 referrerpolicy="no-referrer"
                 loading="lazy"
                 title="Player de vídeo"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
-                allow="autoplay; fullscreen; encrypted-media"
             ></iframe>
-        </div>
-    </div>
-
-    <!-- Download Modal -->
-    <div class="download-modal" id="downloadModal" role="dialog" aria-modal="true" aria-labelledby="download-title">
-        <div class="modal-backdrop" aria-hidden="true"></div>
-        <div class="download-container">
-            <button id="closeDownload" class="close-button" aria-label="Fechar modal de download">
-                <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                </svg>
-            </button>
-
-            <div class="download-content">
-                <div class="download-header">
-                    <div class="download-icon" aria-hidden="true">📥</div>
-                    <h3 id="download-title">Download do Filme</h3>
-                </div>
-
-                <div class="download-info" id="downloadInfo">
-                    <p>Verificando disponibilidade para download...</p>
-                </div>
-
-                <div class="download-options" id="downloadOptions" style="display: none;">
-                    <h4>Qualidades disponíveis:</h4>
-                    <div class="quality-list" id="qualityList"></div>
-                    
-                    <div class="download-agreement">
-                        <label class="agreement-checkbox">
-                            <input type="checkbox" id="downloadAgreement" />
-                            <span>Declaro ter direito legal para baixar este conteúdo</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="download-buttons">
-                    <button class="cancel-button" onclick="closeDownloadModal()">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
