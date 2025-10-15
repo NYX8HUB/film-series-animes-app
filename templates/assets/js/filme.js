@@ -13,6 +13,7 @@ class MoviePageManager {
     constructor() {
         this.movieId = null;
         this.movieData = null;
+        this.imdbId = null;
         this.isLoading = false;
         this.initializeEventListeners();
     }
@@ -127,6 +128,7 @@ class MoviePageManager {
             ]);
 
             this.movieData = movieData;
+            this.imdbId = movieData.imdb_id;
             this.renderMovieData(movieData, creditsData, videosData);
 
         } catch (error) {
@@ -295,9 +297,9 @@ class MoviePageManager {
             streamWarning.style.display = 'none';
         }
 
-        if (streamFrame && this.movieId) {
+        if (streamFrame && this.imdbId) {
             streamFrame.style.display = 'block';
-            streamFrame.src = `${API_CONFIG.streamUrl}${this.movieId}`;
+            streamFrame.src = `https://embed.warezcdn.com/filme/${this.imdbId}`;
             
             streamFrame.setAttribute('referrerpolicy', 'no-referrer');
             streamFrame.setAttribute('loading', 'lazy');

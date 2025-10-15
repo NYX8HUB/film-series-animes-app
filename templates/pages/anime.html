@@ -211,6 +211,7 @@
 
         let animeData = null;
         let animeId = null;
+        let imdbId = null;
 
 
         async function loadAnimeDetails() {
@@ -242,6 +243,12 @@
                 ]);
 
                 animeData = animeDataResult;
+                imdbId = animeDataResult.external_ids?.imdb_id || null;
+                if (!imdbId) {
+                    const extIdsResponse = await fetch(`${API_CONFIG.baseUrl}/tv/${animeId}/external_ids?api_key=${API_CONFIG.key}`);
+                    const extIds = await extIdsResponse.json();
+                    imdbId = extIds.imdb_id;
+                }
                 renderAnimeData(animeDataResult, creditsData, videosData);
 
             } catch (error) {
@@ -547,9 +554,9 @@
 
             window.proceedToWatch = () => {
                 if (streamWarning) streamWarning.style.display = 'none';
-                if (streamFrame) {
+                if (streamFrame && imdbId) {
                     streamFrame.style.display = 'block';
-                    streamFrame.src = `${API_CONFIG.streamUrl}${animeId}/${seasonNumber}/${episodeNumber}`;
+                    streamFrame.src = `https://embed.warezcdn.com/serie/${imdbId}/${seasonNumber}/${episodeNumber}`;
                 }
             };
 

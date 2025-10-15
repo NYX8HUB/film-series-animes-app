@@ -212,6 +212,7 @@
 
         let serieData = null;
         let serieId = null;
+        let imdbId = null;
 
 
         async function loadSerieDetails() {
@@ -243,6 +244,12 @@
                 ]);
 
                 serieData = serieDataResult;
+                imdbId = serieDataResult.external_ids?.imdb_id || null;
+                if (!imdbId) {
+                    const extIdsResponse = await fetch(`${API_CONFIG.baseUrl}/tv/${serieId}/external_ids?api_key=${API_CONFIG.key}`);
+                    const extIds = await extIdsResponse.json();
+                    imdbId = extIds.imdb_id;
+                }
                 renderSerieData(serieDataResult, creditsData, videosData);
 
             } catch (error) {
@@ -548,9 +555,9 @@
 
             window.proceedToWatch = () => {
                 if (streamWarning) streamWarning.style.display = 'none';
-                if (streamFrame) {
+                if (streamFrame && imdbId) {
                     streamFrame.style.display = 'block';
-                    streamFrame.src = `${API_CONFIG.streamUrl}${serieId}/${seasonNumber}/${episodeNumber}`;
+                    streamFrame.src = `https://embed.warezcdn.com/serie/${imdbId}/${seasonNumber}/${episodeNumber}`;
                 }
             };
 
